@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <title>wmb33</title>
+        <link rel="stylesheet" href="src/leaflet.css">
+        <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+        <script src="src/leaflet-src.js"></script>
+        <script src="src/jquery-3.5.1.min.js"></script>
+        <style>
+            #mapdiv{
+                height: 100vh;
+            }
+             #header {
+                height: 75px;
+                background-color: darkgoldenrod;
+            }
+        </style>
+    </head>
+    <body>
+       <div id="header" class="col-md-12">
+            <h1 class="text-center">TrackMe</h1>
+        </div>
+        <div id="side-bar" class="col-md-3">
+           <button id='btnLocate' class='btn btn-primary btn-block'>Track</button>
+            <h4>Zoom Level: <span id='zoom-level'></span></h4>
+            <h4>Map Centre: <span id='map-center'></span></h4>
+            <h4>Mouse Location: <span id='mouse-location'></span></h4>
+        </div>
+        <div id="mapdiv" class="col-md-9"></div>
+        <script>
+            var mymapl;
+            var lyrOSM;
+            var mkrCurrentLocation;
+            
+            $(document).ready(function(){
+                mymap = L.map('mapdiv',{center:[25.6639275,91.8963071], zoom:10, minZomm:6, maxZoom:15});
+                lyrOSM = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(mymap);
+                
+               //code to keep track of location every 5 secs
+            //  setInterval(function(){
+            //  mymap.locate();
+             //}, 5000)
+                
+               mymap.on('click', function(e){
+                   if (e.originalEvent.shiftKey){
+                       alert(mymap.getZoom());
+                   }else {
+                       alert(e.latlng.toString());
+                   }
+              });
+                
+                 mymap.on('contextmenu', function(e) {
+                    var dtCurrentTime = new Date();
+                    L.marker(e.latlng).addTo(mymap).bindPopup(e.latlng.toString()+"<br>"+dtCurrentTime.toString());
+                });
+                
+                mymap.on('keypress', function(e){
+                    if (e.originalEvent.key=='l'){
+                        mymap.locate();
+                    }
+                });
+                
+               //for removing previous markers and keep drawing only the markers for current location
+                mymap.on('locationfound', function(e){
+                    console.log(e);
+                    
+                  //for updating only current location and deleting earlier locations
+                    // if(mkrCurrentLocation){
+                //    mkrCurrentLocation.remove();    
+                  //  }
+                    
+                   // mkrCurrentLocation = L.circleMarker(e.latlng).addTo(mymap);
+                    mkrCurrentLocation = L.circle(e.latlng, {radius:e.accuracy/2}).addTo(mymap);
+                    mymap.setView(e.latlng, 14);
+                });
+                
+                mymap.on('locationerror', function(e){
+                    console.log(e);
+                    alert("Location was not found");
+                })
+                
+                mymap.on('zoomend', function(){
+                        $('#zoom-level').html(mymap.getZoom()); 
+                });
+                
+                mymap.on('moveend', function(){
+                        $('#map-center').html(mymap.getCenter().toString()); 
+                });
+                
+                mymap.on('mousemove', function(e){
+                        $('#mouse-location').html(e.latlng.toString());
+                });
+                
+                $('#btnLocate').click(function(){
+                    mymap.locate();
+                })
+                
+                
+            //mymap.addLayer(lyrOSM);    
+            })
+            
+            
+        </script>
+    </body>
+</html>
